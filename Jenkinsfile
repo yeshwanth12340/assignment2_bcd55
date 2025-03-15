@@ -42,12 +42,13 @@ pipeline {
 
         // Step 4: Docker Build
         stage('Docker Build') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
-                }
-            }
-        }
+    steps {
+        script {
+            sh 'export PATH=$PATH:/usr/local/bin && docker build -t ${DOCKER_IMAGE} .'
+             }
+          }
+       }
+
 
         // Step 5: Docker Push (Uses Jenkins Credentials)
         stage('Docker Push') {
