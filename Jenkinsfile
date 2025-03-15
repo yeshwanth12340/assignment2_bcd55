@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven3'  // Ensure this matches the configured Maven installation in Jenkins
+        maven 'Maven3'  // Ensure Maven is configured in Jenkins
     }
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube'  // Match the name configured in Jenkins
-        DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Adjust as needed
-        DOCKER_PATH = '/opt/homebrew/bin/docker'  // Docker path for Mac
+        SONARQUBE_SERVER = 'SonarQube'  // Matches Jenkins SonarQube configuration
+        DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Docker image name
+        DOCKER_PATH = '/usr/local/bin/docker'  // Check with `which docker`
     }
 
     stages {
@@ -16,7 +16,7 @@ pipeline {
         // Step 1: Clone Git Repository
         stage('Clone Repository') {
             steps {
-                git credentialsId: 'github-credentials', 
+                git credentialsId: '090d0633-eaf0-439f-97b2-e257f3f40897', 
                     url: 'https://github.com/yeshwanth12340/assignment2_bcd55.git', 
                     branch: 'main'
             }
@@ -55,7 +55,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
+                    withDockerRegistry([credentialsId: 'docker-hub-credentials', url: 'https://index.docker.io/v1/']) {
                         sh "${DOCKER_PATH} push ${DOCKER_IMAGE}"
                     }
                 }
@@ -85,4 +85,3 @@ pipeline {
         }
     }
 }
-
