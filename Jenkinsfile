@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3'  // Ensure this matches the configured Maven installation in Jenkins
+        maven 'Maven3'  // Ensure this matches the configured Maven installation in Jenkins
     }
 
     environment {
