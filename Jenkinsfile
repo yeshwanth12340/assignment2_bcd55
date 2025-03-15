@@ -8,6 +8,7 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'SonarQube'  // Match the name configured in Jenkins
         DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Adjust as needed
+        DOCKER_PATH = '/opt/homebrew/bin/docker'  // Docker path for Mac
     }
 
     stages {
@@ -30,32 +31,32 @@ pipeline {
 
         // Step 3: SonarQube Code Analysis
         stage('SonarQube Analysis') {
-    steps {
-        script {
-            withSonarQubeEnv('SonarQube') {
-                sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqa_cfe89e60ad101af5c51b8be1bfb0415ed6a71732'
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQube') {
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONAR_TOKEN'
+                        }
+                    }
                 }
-             }
-          }
-      }
-
+            }
+        }
 
         // Step 4: Docker Build
         stage('Docker Build') {
-    steps {
-        script {
-            sh 'export PATH=$PATH:/usr/local/bin && docker build -t ${DOCKER_IMAGE} .'
-             }
-          }
-       }
-
+            steps {
+                script {
+                    sh '${DOCKER_PATH} build -t ${DOCKER_IMAGE} .'
+                }
+            }
+        }
 
         // Step 5: Docker Push (Uses Jenkins Credentials)
         stage('Docker Push') {
             steps {
                 script {
                     withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
-                        sh "docker push ${DOCKER_IMAGE}"
+                        sh "${DOCKER_PATH} push ${DOCKER_IMAGE}"
                     }
                 }
             }
@@ -65,7 +66,11 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 script {
-                    sh "docker run -d -p 8080:8080 --name assignment-container ${DOCKER_IMAGE}"
+                    sh """
+                    ${DOCKER_PATH} stop assignment-container || true
+                    ${DOCKER_PATH} rm assignment-container || true
+                    ${DOCKER_PATH} run -d -p 8080:8080 --name assignment-container ${DOCKER_IMAGE}
+                    """
                 }
             }
         }
@@ -80,3 +85,4 @@ pipeline {
         }
     }
 }
+
