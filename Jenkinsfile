@@ -2,58 +2,77 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "your-dockerhub-username/app-name"
-        SONARQUBE_SERVER = "SonarQube"
+        SONARQUBE_SERVER = 'SonarQube' // Update with your SonarQube server name in Jenkins
+        DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Change accordingly
     }
 
     stages {
+
+        // Step 1: Clone Git Repository
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/your-repo/sample-project.git'
+                git credentialsId: 'your-jenkins-credential-id', 
+                    url: 'https://github.com/yeshwanth12340/assignment2_bcd55.git', 
+                    branch: 'main'
             }
         }
 
+        // Step 2: Build with Maven
         stage('Build') {
             steps {
                 script {
-                    sh 'mvn clean package' // Change for Gradle/npm if needed
+                    sh 'mvn clean package' // Runs Maven build
                 }
             }
         }
 
+        // Step 3: SonarQube Code Analysis
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar' // Change for Gradle/npm if needed
+                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                        sh 'mvn sonar:sonar' // Run SonarQube scan
                     }
                 }
             }
         }
 
+        // Step 4: Docker Build
         stage('Docker Build') {
             steps {
                 script {
-                    sh 'docker build -t $DOCKER_IMAGE .'
+                    sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
         }
 
+        // Step 5: Docker Push (Requires Docker Hub Login)
         stage('Docker Push') {
             steps {
                 script {
-                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                    sh 'docker push $DOCKER_IMAGE'
+                    sh "docker login -u your-docker-username -p your-docker-password"
+                    sh "docker push ${DOCKER_IMAGE}"
                 }
             }
         }
 
+        // Step 6: Deploy the Docker Container
         stage('Deploy Container') {
             steps {
                 script {
-                    sh 'docker run -d -p 8080:8080 $DOCKER_IMAGE'
+                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}"
                 }
             }
+        }
+    }
+    
+    // Optional: Post-Build Cleanup and Notifications
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }
