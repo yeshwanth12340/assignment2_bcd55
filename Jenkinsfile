@@ -30,17 +30,18 @@ pipeline {
         }
 
         // Step 3: SonarQube Code Analysis
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv('SonarQube') {
-                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqa_cfe89e60ad101af5c51b8be1bfb0415ed6a71732'
-                        }
-                    }
-                }
+       stage('SonarQube Analysis') {
+    steps {
+        script {
+            withSonarQubeEnv('SonarQube') {  // Ensure 'SonarQube' matches Jenkins' SonarQube server name
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONAR_TOKEN'
+                     }
+                  }
+               }
             }
         }
+
 
         // Step 4: Docker Build
         stage('Docker Build') {
