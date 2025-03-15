@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube'  // Update with your SonarQube server name in Jenkins
+        SONARQUBE_SERVER = 'http://localhost:9000'  // Update with your SonarQube server name in Jenkins
         DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Change accordingly
     }
 
