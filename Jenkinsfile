@@ -30,14 +30,15 @@ pipeline {
 
         // Step 3: SonarQube Code Analysis
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000'
-                    }
+    steps {
+        script {
+            withSonarQubeEnv('SonarQube') {
+                sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqa_cfe89e60ad101af5c51b8be1bfb0415ed6a71732'
                 }
-            }
-        }
+             }
+          }
+      }
+
 
         // Step 4: Docker Build
         stage('Docker Build') {
