@@ -11,7 +11,7 @@ pipeline {
         // Step 1: Clone Git Repository
         stage('Clone Repository') {
             steps {
-                git credentialsId: 'your-jenkins-credential-id', 
+                git credentialsId: 'yeshwanth12340', 
                     url: 'https://github.com/yeshwanth12340/assignment2_bcd55.git', 
                     branch: 'main'
             }
