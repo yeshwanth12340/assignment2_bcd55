@@ -35,7 +35,7 @@ pipeline {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONAR_TOKEN'
+                            sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqa_cfe89e60ad101af5c51b8be1bfb0415ed6a71732'
                         }
                     }
                 }
