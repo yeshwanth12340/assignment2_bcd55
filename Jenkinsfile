@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven-3'  // Ensure this matches the configured Maven installation in Jenkins
+    }
+
     environment {
-        SONARQUBE_SERVER = 'SonarQube' // Update with your SonarQube server name in Jenkins
+        SONARQUBE_SERVER = 'SonarQube'  // Update with your SonarQube server name in Jenkins
         DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Change accordingly
     }
 
@@ -11,7 +15,7 @@ pipeline {
         // Step 1: Clone Git Repository
         stage('Clone Repository') {
             steps {
-                git credentialsId: '090d0633-eaf0-439f-97b2-e257f3f40897', 
+                git credentialsId: 'github-credentials', 
                     url: 'https://github.com/yeshwanth12340/assignment2_bcd55.git', 
                     branch: 'main'
             }
@@ -20,9 +24,7 @@ pipeline {
         // Step 2: Build with Maven
         stage('Build') {
             steps {
-                script {
-                    sh 'mvn clean package' // Runs Maven build
-                }
+                sh 'mvn clean package'  // Runs Maven build
             }
         }
 
@@ -31,7 +33,7 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv(SONARQUBE_SERVER) {
-                        sh 'mvn sonar:sonar' // Run SonarQube scan
+                        sh 'mvn sonar:sonar'  // Run SonarQube scan
                     }
                 }
             }
@@ -46,12 +48,13 @@ pipeline {
             }
         }
 
-        // Step 5: Docker Push (Requires Docker Hub Login)
+        // Step 5: Docker Push (Uses Jenkins Credentials)
         stage('Docker Push') {
             steps {
                 script {
-                    sh "docker login -u your-docker-username -p your-docker-password"
-                    sh "docker push ${DOCKER_IMAGE}"
+                    withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
+                        sh "docker push ${DOCKER_IMAGE}"
+                    }
                 }
             }
         }
@@ -60,19 +63,19 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 script {
-                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}"
+                    sh "docker run -d -p 8080:8080 --name assignment-container ${DOCKER_IMAGE}"
                 }
             }
         }
     }
     
-    // Optional: Post-Build Cleanup and Notifications
     post {
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'Pipeline executed successfully! ✅'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs.'
+            echo 'Pipeline failed. Please check the logs. ❌'
         }
     }
 }
+
