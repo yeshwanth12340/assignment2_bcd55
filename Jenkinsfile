@@ -6,8 +6,8 @@ pipeline {
     }
 
     environment {
-        SONARQUBE_SERVER = 'http://localhost:9000'  // Update with your SonarQube server name in Jenkins
-        DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Change accordingly
+        SONARQUBE_SERVER = 'SonarQube'  // Match the name configured in Jenkins
+        DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Adjust as needed
     }
 
     stages {
@@ -32,8 +32,8 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv(SONARQUBE_SERVER) {
-                        sh 'mvn sonar:sonar'  // Run SonarQube scan
+                    withSonarQubeEnv('SonarQube') {
+                        sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000'
                     }
                 }
             }
@@ -78,4 +78,3 @@ pipeline {
         }
     }
 }
-
