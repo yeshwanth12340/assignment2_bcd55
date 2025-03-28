@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'https://github.com/your-username/your-repo.git'
+        GIT_REPO = 'https://github.com/yeshwanth12340/assignment2_bcd55'
         BRANCH = 'main'
-        SONAR_PROJECT_KEY = 'your-project-key'
-        SONAR_HOST_URL = 'http://your-sonarqube-server'
+        SONAR_PROJECT_KEY = 'my_java_app'
+        SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_TOKEN = credentials('sonarqube-token')
         DOCKER_IMAGE = 'your-dockerhub-username/your-image-name'
         REGISTRY_CREDENTIALS = 'docker-hub-credentials'
