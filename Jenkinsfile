@@ -1,88 +1,64 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'  // Ensure Maven is configured in Jenkins
-    }
-
     environment {
-        SONARQUBE_SERVER = 'SonarQube'  // Matches Jenkins SonarQube configuration
-        DOCKER_IMAGE = 'yeshwanth12340/assignment2_bcd55:latest' // Docker image name
-        DOCKER_PATH = '/usr/local/bin/docker'  // Check with `which docker`
+        GIT_REPO = 'https://github.com/your-username/your-repo.git'
+        BRANCH = 'main'
+        SONAR_PROJECT_KEY = 'your-project-key'
+        SONAR_HOST_URL = 'http://your-sonarqube-server'
+        SONAR_TOKEN = credentials('sonarqube-token')
+        DOCKER_IMAGE = 'your-dockerhub-username/your-image-name'
+        REGISTRY_CREDENTIALS = 'docker-hub-credentials'
     }
 
     stages {
-
-        // Step 1: Clone Git Repository
         stage('Clone Repository') {
             steps {
-                git credentialsId: '090d0633-eaf0-439f-97b2-e257f3f40897', 
-                    url: 'https://github.com/yeshwanth12340/assignment2_bcd55.git', 
-                    branch: 'main'
+                git branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
-        // Step 2: Build with Maven
-        stage('Build') {
+        stage('Build Project') {
             steps {
-                sh 'mvn clean package'  // Runs Maven build
+                sh 'mvn clean package'
             }
         }
 
-        // Step 3: SonarQube Code Analysis
-       stage('SonarQube Analysis') {
-    steps {
-        script {
-            withSonarQubeEnv('SonarQube') {  // Ensure 'SonarQube' matches Jenkins' SonarQube server name
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=assignment2_bcd55 -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONAR_TOKEN'
-                     }
-                  }
-               }
-            }
-        }
-
-
-        // Step 4: Docker Build
-        stage('Docker Build') {
+        stage('SonarQube Analysis') {
             steps {
-                script {
-                    sh '${DOCKER_PATH} build -t ${DOCKER_IMAGE} .'
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}'
                 }
             }
         }
 
-        // Step 5: Docker Push (Uses Jenkins Credentials)
-        stage('Docker Push') {
+        stage('Build Docker Image') {
             steps {
-                script {
-                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
-                        docker.image('your-image').push()
-                    }
+                sh 'docker build -t ${DOCKER_IMAGE}:latest .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withDockerRegistry([credentialsId: "${REGISTRY_CREDENTIALS}", url: ""]) {
+                    sh 'docker push ${DOCKER_IMAGE}:latest'
                 }
             }
         }
 
-        // Step 6: Deploy the Docker Container
         stage('Deploy Container') {
             steps {
-                script {
-                    sh """
-                    ${DOCKER_PATH} stop assignment-container || true
-                    ${DOCKER_PATH} rm assignment-container || true
-                    ${DOCKER_PATH} run -d -p 8080:8080 --name assignment-container ${DOCKER_IMAGE}
-                    """
-                }
+                sh 'docker run -d --name my-app -p 8080:8080 ${DOCKER_IMAGE}:latest'
             }
         }
     }
-    
+
     post {
         success {
-            echo 'Pipeline executed successfully! ✅'
+            echo "Pipeline executed successfully!"
         }
         failure {
-            echo 'Pipeline failed. Please check the logs. ❌'
+            echo "Pipeline failed!"
         }
     }
 }
